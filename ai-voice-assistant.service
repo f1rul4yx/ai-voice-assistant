@@ -1,0 +1,16 @@
+[Unit]
+Description=AI Voice Assistant
+After=graphical-session.target pipewire.service pulseaudio.service
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/share/ai-voice-assistant/venv/bin/python %h/.local/share/ai-voice-assistant/main.py
+WorkingDirectory=%h/.local/share/ai-voice-assistant
+Restart=on-failure
+RestartSec=5
+Environment=DISPLAY=:0
+Environment=XDG_CURRENT_DESKTOP=KDE
+
+[Install]
+WantedBy=graphical-session.target
