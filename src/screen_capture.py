@@ -12,8 +12,21 @@ class ScreenCapture:
         self.output_dir.mkdir(exist_ok=True)
         self._tool = self._find_tool()
 
+    def _is_wayland(self) -> bool:
+        return bool(os.environ.get("WAYLAND_DISPLAY"))
+
     def _find_tool(self) -> str:
-        for tool in ["gnome-screenshot", "scrot", "spectacle", "grim", "import"]:
+        wayland_tools = ["spectacle", "gnome-screenshot", "grim"]
+        x11_tools = ["scrot", "import"]
+
+        if self._is_wayland():
+            logger.info("Detectado Wayland")
+            search_order = wayland_tools + x11_tools
+        else:
+            logger.info("Detectado X11")
+            search_order = x11_tools + wayland_tools
+
+        for tool in search_order:
             try:
                 result = subprocess.run(
                     ["which", tool],
@@ -24,8 +37,9 @@ class ScreenCapture:
                     return tool
             except Exception:
                 pass
+
         logger.warning("No se encontró herramienta de captura")
-        logger.info("Instala: scrot (X11) o gnome-screenshot (GNOME) o spectacle (KDE) o grim (Wayland)")
+        logger.info("Instala: spectacle (KDE), gnome-screenshot (GNOME), scrot (X11), grim (Sway/Hyprland)")
         return ""
 
     def capture(self) -> str:
@@ -37,22 +51,25 @@ class ScreenCapture:
         try:
             logger.info(f"Capturando monitor activo con {self._tool}...")
 
-            if self._tool == "gnome-screenshot":
+            if self._tool == "spectacle":
+                subprocess.run(
+                    ["spectacle", "-m", "-b", "-n", "-o", str(output_path)],
+                    capture_output=True, timeout=10
+                )
+            elif self._tool == "gnome-screenshot":
                 subprocess.run(
                     ["gnome-screenshot", "-f", str(output_path)],
                     capture_output=True, timeout=10
                 )
             elif self._tool == "scrot":
                 self._capture_scrot(str(output_path))
-            elif self._tool == "spectacle":
-                subprocess.run(
-                    ["spectacle", "-m", "-b", "-n", "-o", str(output_path)],
-                    capture_output=True, timeout=10
-                )
             elif self._tool == "grim":
                 self._capture_grim(str(output_path))
             elif self._tool == "import":
-                self._capture_import(str(output_path))
+                subprocess.run(
+                    ["import", "-window", "root", str(output_path)],
+                    capture_output=True, timeout=10
+                )
 
             if output_path.exists() and os.path.getsize(output_path) > 1000:
                 logger.info(f"Captura OK: {os.path.getsize(output_path)} bytes")
@@ -162,24 +179,3 @@ class ScreenCapture:
             )
         except Exception:
             pass
-
-    def _capture_import(self, output_path: str):
-        try:
-            result = subprocess.run(
-                ["xdotool", "getmouselocation", "--shell"],
-                capture_output=True, text=True, timeout=5
-            )
-            if result.returncode == 0:
-                info = dict(line.split("=", 1) for line in result.stdout.strip().split("\n") if "=" in line)
-                mx, my = int(info.get("X", 0)), int(info.get("Y", 0))
-                subprocess.run(
-                    ["import", "-window", "root", "-crop", f"1x1+{mx}+{my}", output_path],
-                    capture_output=True, timeout=10
-                )
-                return
-        except Exception:
-            pass
-        subprocess.run(
-            ["import", "-window", "root", output_path],
-            capture_output=True, timeout=10
-        )

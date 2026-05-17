@@ -2,18 +2,17 @@
 set -e
 
 INSTALL_DIR="$HOME/.local/share/ai-voice-assistant"
+SERVICE_FILE="/etc/systemd/system/ai-voice-assistant.service"
 
-echo "=== Desinstalando AI Voice Assistant ==="
+echo "=== AI Voice Assistant - Desinstalador ==="
 
-# Parar servicio
-systemctl --user stop ai-voice-assistant 2>/dev/null || true
-systemctl --user disable ai-voice-assistant 2>/dev/null || true
+# Stop and remove service
+sudo systemctl stop ai-voice-assistant 2>/dev/null || true
+sudo systemctl disable ai-voice-assistant 2>/dev/null || true
+sudo rm -f "$SERVICE_FILE"
+sudo systemctl daemon-reload
 
-# Eliminar servicio
-rm -f "$HOME/.config/systemd/user/ai-voice-assistant.service"
-systemctl --user daemon-reload
-
-# Eliminar archivos
+# Remove files
 rm -rf "$INSTALL_DIR"
 
-echo "Desinstalación completada."
+echo "Desinstalacion completada."

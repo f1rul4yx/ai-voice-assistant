@@ -22,9 +22,13 @@ class OpenCodeClient:
         needs_screenshot = self._needs_screenshot(message)
 
         cmd = ["opencode", "run"]
-        if needs_screenshot and screenshot_path and Path(screenshot_path).exists():
-            cmd.extend(["-f", screenshot_path, "--"])
-            logger.info(f"Captura adjunta: {screenshot_path}")
+        if needs_screenshot and screenshot_path:
+            abs_path = str(Path(screenshot_path).resolve())
+            if Path(abs_path).exists():
+                cmd.extend(["-f", abs_path, "--"])
+                logger.info(f"Captura adjunta: {abs_path}")
+            else:
+                logger.warning(f"Captura no encontrada: {abs_path}")
         else:
             logger.info("Sin captura (no necesaria)")
 

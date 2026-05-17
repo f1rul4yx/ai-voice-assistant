@@ -3,7 +3,7 @@ import threading
 import logging
 from pathlib import Path
 from PyQt6.QtWidgets import QApplication
-from PyQt6.QtCore import QTimer
+from PyQt6.QtCore import QTimer, QObject, pyqtSignal
 
 from src.terminal_window import TerminalWindow
 from src.audio_recorder import AudioRecorder
@@ -24,12 +24,21 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+class WorkerSignals(QObject):
+    tts_finished = pyqtSignal()
+    ui_update = pyqtSignal(str, tuple)
+
+
 class VoiceAssistant:
     def __init__(self):
         logger.info("=== Iniciando asistente ===")
         self.app = QApplication(sys.argv)
         self.window = TerminalWindow()
         self.window.hide()
+
+        self.signals = WorkerSignals()
+        self.signals.tts_finished.connect(self._on_tts_finished)
+        self.signals.ui_update.connect(self._on_ui_update)
 
         self.recorder = AudioRecorder()
         self.transcriber = Transcriber(model_size="base")
@@ -52,12 +61,12 @@ class VoiceAssistant:
                 self.start_listening()
             elif self.state == "recording":
                 self.stop_and_process()
-            elif self.state == "processing":
-                logger.info("Ignorado: aún procesando")
             elif self.state == "speaking":
                 logger.info("Interrumpiendo TTS")
                 self.tts.stop()
                 self._do_hide()
+            elif self.state == "processing":
+                logger.info("Aún procesando, ignorado")
 
     def start_listening(self):
         self.state = "recording"
@@ -139,12 +148,17 @@ class VoiceAssistant:
     def _speak_and_close(self, text: str):
         self.tts.speak(text)
         logger.info("TTS finalizado")
-        self._ui("set_status", "ALT+Z para hablar")
-        QTimer.singleShot(0, self._do_hide)
+        self.signals.tts_finished.emit()
 
-    def _ui(self, method_name, *args):
+    def _on_tts_finished(self):
+        self._do_hide()
+
+    def _on_ui_update(self, method_name: str, args: tuple):
         func = getattr(self.window, method_name)
-        QTimer.singleShot(0, lambda: func(*args))
+        func(*args)
+
+    def _ui(self, method_name: str, *args):
+        self.signals.ui_update.emit(method_name, args)
 
     def _finish(self):
         self._ui("set_status", "ALT+Z para hablar")
