@@ -163,6 +163,8 @@ class VoiceAssistant:
 
     def _finish(self):
         self._ui("set_status", "ALT+Z para hablar")
+        if self._hide_timer:
+            self._hide_timer.stop()
         self._hide_timer = QTimer()
         self._hide_timer.setSingleShot(True)
         self._hide_timer.timeout.connect(self._do_hide)

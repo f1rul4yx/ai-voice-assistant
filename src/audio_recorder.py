@@ -54,6 +54,3 @@ class AudioRecorder:
 
         logger.error("Archivo de audio no encontrado")
         return ""
-
-    def is_recording(self) -> bool:
-        return self.recording

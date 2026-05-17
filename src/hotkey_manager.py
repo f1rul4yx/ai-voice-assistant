@@ -21,9 +21,11 @@ class HotkeyManager(QObject):
         logger.info(f"  Configura tu atajo para ejecutar: {self._trigger_file}")
 
     def _check_trigger(self):
-        if self._trigger_file.exists():
+        try:
             self._trigger_file.unlink()
             self.hotkey_pressed.emit()
+        except FileNotFoundError:
+            pass
 
     def stop_listening(self):
         if hasattr(self, '_poll_timer'):

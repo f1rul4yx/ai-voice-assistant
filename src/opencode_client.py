@@ -9,14 +9,6 @@ logger = logging.getLogger(__name__)
 class OpenCodeClient:
     def __init__(self):
         self.history = []
-        self.system_prompt = (
-            "Eres un asistente de voz conciso. "
-            "Responde de forma breve y directa. "
-            "Solo analiza capturas de pantalla cuando el usuario lo pida explícitamente "
-            "o cuando la pregunta implique algo visual (ej: 'qué ves', 'qué tengo abierto', "
-            "'describe la pantalla', 'qué color es', etc.). "
-            "Si no hay captura adjunta, responde normalmente."
-        )
 
     def send_message(self, message: str, screenshot_path: Optional[str] = None) -> Optional[str]:
         needs_screenshot = self._needs_screenshot(message)
@@ -77,6 +69,3 @@ class OpenCodeClient:
 
     def get_history(self):
         return self.history
-
-    def clear_history(self):
-        self.history = []
