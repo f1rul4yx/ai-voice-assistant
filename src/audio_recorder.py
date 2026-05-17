@@ -1,5 +1,4 @@
 import subprocess
-import os
 from pathlib import Path
 import logging
 
@@ -48,7 +47,7 @@ class AudioRecorder:
             self.recording = False
 
         if output_path.exists():
-            size = os.path.getsize(output_path)
+            size = output_path.stat().st_size
             logger.info(f"Audio guardado: {size} bytes")
             return str(output_path)
 

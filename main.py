@@ -3,6 +3,7 @@ import os
 import threading
 import logging
 from pathlib import Path
+from logging.handlers import RotatingFileHandler
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtCore import QTimer, QObject, pyqtSignal
 
@@ -14,11 +15,14 @@ from src.opencode_client import OpenCodeClient
 from src.screen_capture import ScreenCapture
 from src.hotkey_manager import HotkeyManager
 
+log_handler = RotatingFileHandler("debug.log", maxBytes=5*1024*1024, backupCount=3)
+log_handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
     handlers=[
-        logging.FileHandler("debug.log"),
+        log_handler,
         logging.StreamHandler(sys.stdout)
     ]
 )
@@ -50,7 +54,6 @@ class VoiceAssistant:
 
         self.state = "idle"
         self._lock = threading.Lock()
-        self._tts_thread = None
         self._hide_timer = None
 
         self.hotkey.hotkey_pressed.connect(self.on_hotkey)
@@ -133,10 +136,9 @@ class VoiceAssistant:
                 logger.info("Reproduciendo TTS...")
                 self._ui("set_status", "Reproduciendo... (ALT+Z para cortar)")
                 self.state = "speaking"
-                self._tts_thread = threading.Thread(
+                threading.Thread(
                     target=self._speak_and_close, args=(response,), daemon=True
-                )
-                self._tts_thread.start()
+                ).start()
             else:
                 self._ui("add_system_message", "Sin respuesta")
                 self._finish()

@@ -1,8 +1,8 @@
 import subprocess
+import os
 import shutil
 from pathlib import Path
 import logging
-import os
 
 logger = logging.getLogger(__name__)
 
@@ -65,8 +65,8 @@ class ScreenCapture:
                     capture_output=True, timeout=10
                 )
 
-            if output_path.exists() and os.path.getsize(output_path) > 1000:
-                logger.info(f"Captura OK: {os.path.getsize(output_path)} bytes")
+            if output_path.exists() and output_path.stat().st_size > 1000:
+                logger.info(f"Captura OK: {output_path.stat().st_size} bytes")
                 return str(output_path)
             else:
                 logger.warning(f"Captura vacía o muy pequeña")
@@ -127,8 +127,8 @@ class ScreenCapture:
                             "h": info["height"]
                         })
                 return monitors
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(f"Error leyendo monitores con xdotool: {e}")
         try:
             result = subprocess.run(
                 ["xrandr", "--query"],
@@ -152,8 +152,8 @@ class ScreenCapture:
                                 })
                                 break
                 return monitors
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(f"Error leyendo monitores con xrandr: {e}")
         return []
 
     def _capture_grim(self, output_path: str):
