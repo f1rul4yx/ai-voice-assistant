@@ -92,6 +92,3 @@ class TerminalWindow(QMainWindow):
 
     def set_status(self, text: str):
         self.status_bar.setText(text)
-
-    def clear(self):
-        self.chat.clear()

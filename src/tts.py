@@ -1,6 +1,5 @@
 import asyncio
 import subprocess
-import os
 import uuid
 import edge_tts
 import tempfile

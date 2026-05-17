@@ -98,8 +98,8 @@ class ScreenCapture:
                             capture_output=True, timeout=10
                         )
                         return
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(f"Error en captura scrot con xdotool: {e}")
         subprocess.run(
             ["scrot", "--overwrite", output_path],
             capture_output=True, timeout=10
