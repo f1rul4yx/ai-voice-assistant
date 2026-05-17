@@ -1,5 +1,4 @@
 import sys
-import os
 import threading
 import logging
 from pathlib import Path
@@ -95,7 +94,7 @@ class VoiceAssistant:
             self._finish()
             return
 
-        size = os.path.getsize(audio_path)
+        size = Path(audio_path).stat().st_size
         logger.info(f"Audio size: {size} bytes")
 
         if size < 1000:
