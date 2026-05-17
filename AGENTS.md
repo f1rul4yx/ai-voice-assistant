@@ -43,16 +43,10 @@ sudo ./uninstall.sh
 sudo systemctl start|stop|restart|status ai-voice-assistant
 sudo journalctl -u ai-voice-assistant -f
 
-# Manual (dev)
+# Manual (dev) — crea venv primero si no existe
+python -m venv venv && source venv/bin/activate && pip install -r requirements.txt
 python main.py
 ```
-
-## Dependencias externas requeridas
-
-- `parecord` (viene con pulseaudio/pipewire)
-- `ffplay` (viene con ffmpeg)
-- Una herramienta de captura: `spectacle` (KDE), `gnome-screenshot` (GNOME), `scrot` (X11), `grim` (Wayland wlroots), `import` (ImageMagick X11)
-- `opencode` en PATH (típicamente `~/.opencode/bin/opencode`)
 
 ## Gotchas
 
@@ -65,8 +59,11 @@ python main.py
 - **Audio vacío**: si `parecord` genera < 1000 bytes, tratar como error
 - **parecord stdout**: debe ir a `DEVNULL`, no `PIPE`, o el buffer se llena y bloquea la grabación
 - **grim**: NO usar flag `-o` con path de archivo (espera nombre de monitor). Uso correcto: `grim output.png`
-- **temp_media/**: directorio compartido para audio y capturas temporales (renombrado de `temp_audio`)
+- **temp_media/**: directorio compartido para `recording.wav` y `screenshot.png`. Creado con `mkdir(exist_ok=True)` en `AudioRecorder` y `ScreenCapture` (renombrado de `temp_audio`)
 - **debug.log**: usa `RotatingFileHandler` (5MB, 3 backups). No usar `FileHandler` simple
 - **Mensajes del chat**: siempre aplicar `html.escape()` antes de `insertHtml`, luego convertir `\n` → `<br>`
 - **TTS temp files**: usar UUID para nombres, no PID (evita colisiones en conversaciones rápidas)
 - **_needs_screenshot**: detecta preguntas visuales por keywords en `opencode_client.py`. Si se añaden nuevas, actualizar la lista
+- **opencode timeout**: 300s (5 min) por consulta en `opencode_client.py`
+- **install.sh excludes**: `venv`, `__pycache__`, `temp_audio`, `temp_media`, `debug.log`, `.git`, `*.log`
+- **Dependencias externas**: `parecord` (pulseaudio/pipewire), `ffplay` (ffmpeg), captura (`spectacle`/`gnome-screenshot`/`scrot`/`grim`/`import`), `opencode` en PATH
