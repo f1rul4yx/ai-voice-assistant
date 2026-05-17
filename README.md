@@ -1,6 +1,6 @@
 # AI Voice Assistant
 
-Asistente de voz universal para Linux. Se activa con un atajo de teclado, graba el micrófono, transcribe con Whisper, consulta a opencode y reproduce la respuesta por voz.
+Asistente de voz universal para Linux. Se activa con un atajo de teclado, graba el microfono, transcribe con Whisper, consulta a opencode y reproduce la respuesta por voz.
 
 ## Compatibilidad
 
@@ -8,15 +8,15 @@ Funciona en **cualquier distro** y **cualquier entorno de escritorio**:
 
 | Distro | Entorno | Funciona |
 |---|---|---|
-| Arch Linux | KDE Plasma, GNOME, bspwm, Sway, Hyprland, XFCE, i3 | Sí |
-| Debian/Ubuntu | KDE Plasma, GNOME, XFCE, MATE, Cinnamon | Sí |
-| Fedora | KDE Plasma, GNOME, Sway | Sí |
-| Cualquier otra | Cualquiera con X11 o Wayland | Sí |
+| Arch Linux | KDE Plasma, GNOME, bspwm, Sway, Hyprland, XFCE, i3 | Si |
+| Debian/Ubuntu | KDE Plasma, GNOME, XFCE, MATE, Cinnamon | Si |
+| Fedora | KDE Plasma, GNOME, Sway | Si |
+| Cualquier otra | Cualquiera con X11 o Wayland | Si |
 
 ## Requisitos
 
 - **Python 3.10+**
-- **`opencode`** en el PATH
+- **`opencode`** instalado y en el PATH
 - **Micrófono** funcionando
 - **Internet** (para edge-tts)
 - **PulseAudio o PipeWire** (presente en cualquier distro moderna)
@@ -24,28 +24,32 @@ Funciona en **cualquier distro** y **cualquier entorno de escritorio**:
 
 | Herramienta | Entorno | Debian | Arch |
 |---|---|---|---|
-| `scrot` | X11 (universal) | `sudo apt install scrot` | `sudo pacman -S scrot` |
-| `gnome-screenshot` | GNOME | `sudo apt install gnome-screenshot` | `sudo pacman -S gnome-screenshot` |
 | `spectacle` | KDE | `sudo apt install spectacle` | `sudo pacman -S spectacle` |
+| `gnome-screenshot` | GNOME | `sudo apt install gnome-screenshot` | `sudo pacman -S gnome-screenshot` |
+| `scrot` | X11 (universal) | `sudo apt install scrot` | `sudo pacman -S scrot` |
 | `grim` | Wayland (Sway/Hyprland) | `sudo apt install grim` | `sudo pacman -S grim` |
 | `import` (ImageMagick) | X11 | `sudo apt install imagemagick` | `sudo pacman -S imagemagick` |
 
-El asistente detecta automáticamente cuál está instalada.
+El asistente detecta automaticamente cual esta instalada y es compatible con tu entorno.
 
-## Instalación
+## Instalacion
 
-### Opción rápida (recomendada)
+### Instalacion automatica (recomendada)
 
 ```bash
 git clone https://github.com/TU_USUARIO/ai-voice-assistant.git
 cd ai-voice-assistant
 chmod +x install.sh
-./install.sh
+sudo ./install.sh
 ```
 
-Esto copia el proyecto a `~/.local/share/ai-voice-assistant`, crea el entorno virtual e instala el servicio systemd.
+Esto:
+1. Copia el proyecto a `~/.local/share/ai-voice-assistant`
+2. Crea el entorno virtual e instala dependencias
+3. Instala un servicio systemd de sistema (arranca con el SO)
+4. Habilita el servicio para inicio automatico
 
-### Opción manual
+### Instalacion manual
 
 ```bash
 git clone https://github.com/TU_USUARIO/ai-voice-assistant.git
@@ -58,23 +62,29 @@ python main.py
 
 ## Uso
 
-### Con servicio systemd (tras instalar)
+### Servicio systemd
 
 ```bash
 # Iniciar
-systemctl --user start ai-voice-assistant
-
-# Iniciar automáticamente al login
-systemctl --user enable ai-voice-assistant
-
-# Ver estado
-systemctl --user status ai-voice-assistant
-
-# Ver logs
-journalctl --user -u ai-voice-assistant -f
+sudo systemctl start ai-voice-assistant
 
 # Parar
-systemctl --user stop ai-voice-assistant
+sudo systemctl stop ai-voice-assistant
+
+# Reiniciar (util si se queda bloqueado)
+sudo systemctl restart ai-voice-assistant
+
+# Ver estado
+sudo systemctl status ai-voice-assistant
+
+# Ver logs en vivo
+sudo journalctl -u ai-voice-assistant -f
+
+# Iniciar automatico al encender
+sudo systemctl enable ai-voice-assistant
+
+# Desactivar inicio automatico
+sudo systemctl disable ai-voice-assistant
 ```
 
 ### Manual (sin servicio)
@@ -88,9 +98,9 @@ python main.py
 El asistente usa un archivo trigger (`/tmp/ai_voice_trigger`) que funciona en **cualquier entorno** (X11 y Wayland). Configura un atajo de teclado en tu DE/WM apuntando a `trigger.sh`:
 
 **KDE Plasma:**
-1. `Configuración del sistema` → `Atajos` → `Atajos personalizados`
+1. `Configuracion del sistema` → `Atajos` → `Atajos personalizados`
 2. `Editar` → `Nuevo` → `Nuevo grupo` ("AI Voice Assistant")
-3. Click derecho → `Nuevo` → `Acción global` → `Comando/URL`
+3. Click derecho → `Nuevo` → `Accion global` → `Comando/URL`
 4. Trigger: tu atajo preferido (ej: `ALT+Z`)
 5. Comando: `~/.local/share/ai-voice-assistant/trigger.sh`
 6. Aplicar
@@ -131,52 +141,52 @@ bindsym Mod4+z exec ~/.local/share/ai-voice-assistant/trigger.sh
 
 ```
 Atajo (1ª vez)
-    │
-    ├─ Aparece ventana terminal (oculta hasta ahora)
-    ├─ Carga historial de conversaciones anteriores
-    └─ Empieza a grabar audio del micrófono
-         │
-         │ (hablas)
-         │
-         ▼
+    |
+    +-- Aparece ventana terminal (oculta hasta ahora)
+    +-- Carga historial de conversaciones anteriores
+    +-- Empieza a grabar audio del microfono
+         |
+         | (hablas)
+         |
+         v
 Atajo (2ª vez)
-    │
-    ├─ Para la grabación
-    ├─ Transcribe audio → texto (Whisper local)
-    ├─ Analiza si la pregunta es visual
-    │   ├─ Sí → captura pantalla y adjunta imagen
-    │   └─ No → consulta sin imagen (ahorra tokens)
-    ├─ Envía pregunta a opencode
-    ├─ Muestra respuesta en la terminal
-    ├─ Lee la respuesta en voz alta (edge-tts)
-    └─ Al terminar de hablar → ventana se oculta
-         │
-         ▼
+    |
+    +-- Para la grabacion
+    +-- Transcribe audio → texto (Whisper local)
+    +-- Analiza si la pregunta es visual
+    |   +-- Si → captura pantalla y adjunta imagen
+    |   +-- No → consulta sin imagen (ahorra tokens)
+    +-- Envia pregunta a opencode
+    +-- Muestra respuesta en la terminal
+    +-- Lee la respuesta en voz alta (edge-tts)
+    +-- Al terminar de hablar → ventana se oculta
+         |
+         v
 Atajo (mientras habla)
-    │
-    └─ Corta la respuesta inmediatamente y oculta la ventana
-         │
-         ▼
+    |
+    +-- Corta la respuesta inmediatamente y oculta la ventana
+         |
+         v
 Atajo (siguiente vez)
-    │
-    └─ Mismo flujo, pero la ventana muestra
+    |
+    +-- Mismo flujo, pero la ventana muestra
        todo el historial acumulado
 ```
 
 ### Captura de pantalla inteligente
 
-Solo se envía captura cuando la pregunta implica algo visual:
-- "qué ves", "describe la pantalla", "qué tengo abierto"
-- "qué color es", "qué aplicación es esa"
+Solo se envia captura cuando la pregunta implica algo visual:
+- "que ves", "describe la pantalla", "que tengo abierto"
+- "que color es", "que aplicacion es esa"
 - "mira esto", "observa"
 
-Las preguntas normales ("qué hora es", "explica Python") **no** envían captura, ahorrando tokens.
+Las preguntas normales ("que hora es", "explica Python") **no** envian captura, ahorrando tokens.
 
 ### Captura por monitor
 
-En sistemas con múltiples monitores, captura solo el monitor donde está el cursor del ratón.
+En sistemas con multiples monitores, captura solo el monitor donde esta el cursor del raton.
 
-## Configuración
+## Configuracion
 
 ### Modelo Whisper (`src/transcriber.py`)
 
@@ -184,13 +194,13 @@ En sistemas con múltiples monitores, captura solo el monitor donde está el cur
 self.transcriber = Transcriber(model_size="base")
 ```
 
-| Modelo | Tamaño | Velocidad | Precisión |
+| Modelo | Tamaño | Velocidad | Precision |
 |---|---|---|---|
-| `tiny` | ~75MB | Muy rápido | Baja |
-| `base` | ~140MB | Rápido | Media (default) |
+| `tiny` | ~75MB | Muy rapido | Baja |
+| `base` | ~140MB | Rapido | Media (default) |
 | `small` | ~460MB | Medio | Alta |
 | `medium` | ~1.5GB | Lento | Muy alta |
-| `large` | ~3GB | Muy lento | Máxima |
+| `large` | ~3GB | Muy lento | Maxima |
 
 ### Voz TTS (`src/tts.py`)
 
@@ -199,10 +209,10 @@ self.tts = TextToSpeech()  # default: es-ES-AlvaroNeural
 ```
 
 Voces disponibles:
-- `es-ES-AlvaroNeural` - Masculina España
-- `es-ES-ElviraNeural` - Femenina España
-- `es-MX-JorgeNeural` - Masculina México
-- `es-MX-DaliaNeural` - Femenina México
+- `es-ES-AlvaroNeural` - Masculina Espana
+- `es-ES-ElviraNeural` - Femenina Espana
+- `es-MX-JorgeNeural` - Masculina Mexico
+- `es-MX-DaliaNeural` - Femenina Mexico
 - `es-AR-TomasNeural` - Masculina Argentina
 - `es-CO-SalomeNeural` - Femenina Colombia
 
@@ -217,60 +227,60 @@ Por defecto usa el modelo configurado en opencode. Para cambiarlo, edita `~/.con
 }
 ```
 
-### Debug
-
-```bash
-journalctl --user -u ai-voice-assistant -f
-```
-
-O ejecutando manualmente:
-```bash
-python main.py 2>&1 | tee debug.log
-```
-
 ## Estructura
 
 ```
 ai-voice-assistant/
-├── main.py                 # Punto de entrada
-├── requirements.txt        # Dependencias Python
-├── trigger.sh              # Script para atajo de teclado
-├── install.sh              # Script de instalación
-├── uninstall.sh            # Script de desinstalación
-├── ai-voice-assistant.service  # Servicio systemd user
+├── main.py                     # Punto de entrada
+├── requirements.txt            # Dependencias Python
+├── trigger.sh                  # Script para atajo de teclado
+├── install.sh                  # Script de instalacion
+├── uninstall.sh                # Script de desinstalacion
+├── ai-voice-assistant.service  # Plantilla servicio systemd
 ├── .gitignore
 ├── README.md
 ├── src/
 │   ├── __init__.py
-│   ├── audio_recorder.py   # Grabación con parecord (PulseAudio/PipeWire)
-│   ├── transcriber.py      # Transcripción con Whisper
-│   ├── tts.py              # Texto a voz con edge-tts + ffplay
-│   ├── opencode_client.py  # Cliente de opencode con captura inteligente
-│   ├── screen_capture.py   # Captura universal (detecta herramienta disponible)
-│   ├── terminal_window.py  # Ventana tipo terminal PyQt6
-│   └── hotkey_manager.py   # Hotkey vía archivo trigger (X11/Wayland)
-└── temp_audio/             # Archivos temporales (audio, capturas)
+│   ├── audio_recorder.py       # Grabacion con parecord (PulseAudio/PipeWire)
+│   ├── transcriber.py          # Transcripcion con Whisper
+│   ├── tts.py                  # Texto a voz con edge-tts + ffplay
+│   ├── opencode_client.py      # Cliente de opencode con captura inteligente
+│   ├── screen_capture.py       # Captura universal (detecta herramienta disponible)
+│   ├── terminal_window.py      # Ventana tipo terminal PyQt6
+│   └── hotkey_manager.py       # Hotkey via archivo trigger (X11/Wayland)
+└── temp_audio/                 # Archivos temporales (audio, capturas)
 ```
 
-## Solución de problemas
+## Solucion de problemas
 
 **La ventana no aparece al pulsar el atajo:**
-- Verifica que el atajo esté bien configurado en tu DE
+- Verifica que el atajo este bien configurado en tu DE
 - Comprueba que `trigger.sh` sea ejecutable: `chmod +x trigger.sh`
 - Ejecuta manualmente: `touch /tmp/ai_voice_trigger`
+- Reinicia el servicio: `sudo systemctl restart ai-voice-assistant`
+
+**El servicio se queda bloqueado:**
+- Reinicialo: `sudo systemctl restart ai-voice-assistant`
+- Revisa los logs: `sudo journalctl -u ai-voice-assistant --no-pager -n 50`
 
 **No graba audio:**
-- Verifica que PulseAudio o PipeWire estén corriendo: `pulseaudio --check` o `systemctl --user status pipewire`
+- Verifica que PulseAudio o PipeWire esten corriendo: `pulseaudio --check` o `systemctl --user status pipewire`
 - Prueba: `parecord test.wav` (habla, Ctrl+C, reproduce con `ffplay test.wav`)
 
 **La captura sale negra:**
-- En Wayland, algunos compositores no soportan captura. Usa `scrot` en X11 o `gnome-screenshot` en GNOME
+- En Wayland, `scrot` no funciona. El asistente detecta Wayland y usa `spectacle` o `gnome-screenshot` automaticamente
 - En KDE Wayland, `spectacle` funciona correctamente
+- En GNOME Wayland, instala `gnome-screenshot`
 
 **opencode no responde:**
 - Verifica: `opencode run "di hola"`
 - El timeout es de 5 minutos por consulta
+- Asegurate de que opencode esta en el PATH del usuario
 
-**El servicio no arranca:**
-- Verifica logs: `journalctl --user -u ai-voice-assistant --no-pager`
-- Asegúrate de que `opencode` está en el PATH del usuario
+## Desinstalacion
+
+```bash
+cd ai-voice-assistant
+chmod +x uninstall.sh
+sudo ./uninstall.sh
+```
