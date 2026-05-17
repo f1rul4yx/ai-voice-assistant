@@ -1,4 +1,5 @@
 import subprocess
+import shutil
 from pathlib import Path
 import logging
 import os
@@ -27,16 +28,9 @@ class ScreenCapture:
             search_order = x11_tools + wayland_tools
 
         for tool in search_order:
-            try:
-                result = subprocess.run(
-                    ["which", tool],
-                    capture_output=True, text=True, timeout=5
-                )
-                if result.returncode == 0:
-                    logger.info(f"Usando {tool} para capturas")
-                    return tool
-            except Exception:
-                pass
+            if shutil.which(tool):
+                logger.info(f"Usando {tool} para capturas")
+                return tool
 
         logger.warning("No se encontró herramienta de captura")
         logger.info("Instala: spectacle (KDE), gnome-screenshot (GNOME), scrot (X11), grim (Sway/Hyprland)")
@@ -163,19 +157,7 @@ class ScreenCapture:
         return []
 
     def _capture_grim(self, output_path: str):
-        try:
-            result = subprocess.run(
-                ["grim", "-o", output_path],
-                capture_output=True, timeout=10
-            )
-            if result.returncode == 0:
-                return
-        except Exception:
-            pass
-        try:
-            result = subprocess.run(
-                ["grim", output_path],
-                capture_output=True, timeout=10
-            )
-        except Exception:
-            pass
+        subprocess.run(
+            ["grim", output_path],
+            capture_output=True, timeout=10
+        )

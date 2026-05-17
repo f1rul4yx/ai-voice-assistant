@@ -27,7 +27,7 @@ class AudioRecorder:
                 f"--channels={self.channels}",
                 str(output_path)
             ],
-            stdout=subprocess.PIPE,
+            stdout=subprocess.DEVNULL,
             stderr=subprocess.PIPE
         )
         logger.info(f"parecord PID: {self.process.pid}")
@@ -39,8 +39,7 @@ class AudioRecorder:
             logger.info("Terminando parecord...")
             self.process.terminate()
             try:
-                stdout, stderr = self.process.communicate(timeout=5)
-                logger.info(f"parecord stdout: {stdout.decode()[:200]}")
+                _, stderr = self.process.communicate(timeout=5)
                 logger.info(f"parecord stderr: {stderr.decode()[:200]}")
             except subprocess.TimeoutExpired:
                 logger.warning("parecord no terminó, matando...")

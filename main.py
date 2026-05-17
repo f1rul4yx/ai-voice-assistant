@@ -141,7 +141,7 @@ class VoiceAssistant:
                 self._finish()
 
         except Exception as e:
-            logger.exception(f"Error: {e}")
+            logger.exception("Error en procesamiento de audio")
             self._ui("add_system_message", f"Error: {str(e)}")
             self._finish()
 

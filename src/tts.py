@@ -1,5 +1,6 @@
 import asyncio
 import subprocess
+import os
 import edge_tts
 import tempfile
 from pathlib import Path
@@ -15,7 +16,8 @@ class TextToSpeech:
 
     async def _generate_speech(self, text: str) -> str:
         communicate = edge_tts.Communicate(text, self.voice)
-        temp_path = tempfile.mktemp(suffix=".mp3")
+        temp_dir = Path(tempfile.gettempdir())
+        temp_path = str(temp_dir / f"tts_{os.getpid()}.mp3")
         await communicate.save(temp_path)
         return temp_path
 
