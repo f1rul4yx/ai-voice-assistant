@@ -69,7 +69,8 @@ class TerminalWindow(QMainWindow):
     def add_user_message(self, text: str):
         cursor = self.chat.textCursor()
         cursor.movePosition(QTextCursor.MoveOperation.End)
-        cursor.insertHtml(f'<span style="color: #56b6c2;">&gt; </span><span style="color: #e0e0e0;">{html.escape(text)}</span><br><br>')
+        escaped = html.escape(text).replace("\n", "<br>")
+        cursor.insertHtml(f'<span style="color: #56b6c2;">&gt; </span><span style="color: #e0e0e0;">{escaped}</span><br><br>')
         self.chat.setTextCursor(cursor)
         self.chat.ensureCursorVisible()
 
@@ -84,7 +85,8 @@ class TerminalWindow(QMainWindow):
     def add_system_message(self, text: str):
         cursor = self.chat.textCursor()
         cursor.movePosition(QTextCursor.MoveOperation.End)
-        cursor.insertHtml(f'<span style="color: #555; font-style: italic;">{html.escape(text)}</span><br><br>')
+        escaped = html.escape(text).replace("\n", "<br>")
+        cursor.insertHtml(f'<span style="color: #555; font-style: italic;">{escaped}</span><br><br>')
         self.chat.setTextCursor(cursor)
         self.chat.ensureCursorVisible()
 

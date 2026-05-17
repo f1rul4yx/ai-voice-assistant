@@ -51,6 +51,7 @@ class VoiceAssistant:
         self.state = "idle"
         self._lock = threading.Lock()
         self._tts_thread = None
+        self._hide_timer = None
 
         self.hotkey.hotkey_pressed.connect(self.on_hotkey)
         self.hotkey.start_listening()
@@ -162,7 +163,10 @@ class VoiceAssistant:
 
     def _finish(self):
         self._ui("set_status", "ALT+Z para hablar")
-        QTimer.singleShot(2000, self._do_hide)
+        self._hide_timer = QTimer()
+        self._hide_timer.setSingleShot(True)
+        self._hide_timer.timeout.connect(self._do_hide)
+        self._hide_timer.start(2000)
 
     def _do_hide(self):
         self.window.hide()

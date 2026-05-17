@@ -157,7 +157,9 @@ class ScreenCapture:
         return []
 
     def _capture_grim(self, output_path: str):
-        subprocess.run(
+        result = subprocess.run(
             ["grim", output_path],
             capture_output=True, timeout=10
         )
+        if result.returncode != 0:
+            logger.warning(f"grim falló: {result.stderr.decode()[:200]}")
