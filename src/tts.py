@@ -25,10 +25,7 @@ class TextToSpeech:
 
         try:
             logger.info(f"Generando audio TTS para: '{text[:50]}...'")
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            audio_path = loop.run_until_complete(self._generate_speech(text))
-            loop.close()
+            audio_path = asyncio.run(self._generate_speech(text))
             logger.info(f"Audio TTS generado: {audio_path}")
 
             logger.info("Reproduciendo con ffplay...")

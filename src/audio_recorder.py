@@ -12,7 +12,7 @@ class AudioRecorder:
         self.channels = channels
         self.recording = False
         self.process = None
-        self.output_dir = Path("temp_audio")
+        self.output_dir = Path("temp_media")
         self.output_dir.mkdir(exist_ok=True)
 
     def start_recording(self):

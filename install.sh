@@ -35,7 +35,7 @@ done
 echo "1. Copiando archivos a $INSTALL_DIR..."
 mkdir -p "$INSTALL_DIR"
 rsync -a --exclude='venv' --exclude='__pycache__' --exclude='temp_audio' \
-    --exclude='debug.log' --exclude='.git' --exclude='*.log' \
+    --exclude='temp_media' --exclude='debug.log' --exclude='.git' --exclude='*.log' \
     "$SCRIPT_DIR/" "$INSTALL_DIR/"
 
 # Create venv

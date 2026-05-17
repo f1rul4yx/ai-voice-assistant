@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 class ScreenCapture:
     def __init__(self):
-        self.output_dir = Path("temp_audio")
+        self.output_dir = Path("temp_media")
         self.output_dir.mkdir(exist_ok=True)
         self._tool = self._find_tool()
 

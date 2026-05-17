@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QTextEdit, QLabel
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont, QTextCursor
+import html
 
 
 class TerminalWindow(QMainWindow):
@@ -68,14 +69,14 @@ class TerminalWindow(QMainWindow):
     def add_user_message(self, text: str):
         cursor = self.chat.textCursor()
         cursor.movePosition(QTextCursor.MoveOperation.End)
-        cursor.insertHtml(f'<span style="color: #56b6c2;">&gt; </span><span style="color: #e0e0e0;">{text}</span><br><br>')
+        cursor.insertHtml(f'<span style="color: #56b6c2;">&gt; </span><span style="color: #e0e0e0;">{html.escape(text)}</span><br><br>')
         self.chat.setTextCursor(cursor)
         self.chat.ensureCursorVisible()
 
     def add_assistant_message(self, text: str):
         cursor = self.chat.textCursor()
         cursor.movePosition(QTextCursor.MoveOperation.End)
-        formatted = text.replace("\n", "<br>")
+        formatted = html.escape(text).replace("\n", "<br>")
         cursor.insertHtml(f'<span style="color: #98c379;">{formatted}</span><br><br>')
         self.chat.setTextCursor(cursor)
         self.chat.ensureCursorVisible()
@@ -83,7 +84,7 @@ class TerminalWindow(QMainWindow):
     def add_system_message(self, text: str):
         cursor = self.chat.textCursor()
         cursor.movePosition(QTextCursor.MoveOperation.End)
-        cursor.insertHtml(f'<span style="color: #555; font-style: italic;">{text}</span><br><br>')
+        cursor.insertHtml(f'<span style="color: #555; font-style: italic;">{html.escape(text)}</span><br><br>')
         self.chat.setTextCursor(cursor)
         self.chat.ensureCursorVisible()
 
