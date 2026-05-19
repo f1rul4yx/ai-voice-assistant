@@ -1,75 +1,42 @@
 #!/bin/bash
 set -e
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-INSTALL_DIR="$HOME/.local/share/ai-voice-assistant"
+PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
+VENV_PYTHON="$PROJECT_DIR/.venv/bin/python"
 
-# Detect user info
-CURRENT_USER="$(whoami)"
-CURRENT_UID="$(id -u)"
-WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-}"
-XDG_DESKTOP="${XDG_CURRENT_DESKTOP:-KDE}"
+echo "=== Nova Voice Assistant ==="
 
-echo "=== AI Voice Assistant - Instalador ==="
-echo ""
-echo "Usuario: $CURRENT_USER (UID: $CURRENT_UID)"
-echo "Entorno: $XDG_DESKTOP"
-echo "Display: ${WAYLAND_DISPLAY:+Wayland ($WAYLAND_DISPLAY)}${WAYLAND_DISPLAY:+X11}"
-echo ""
-
-# Require sudo
-if ! command -v sudo &> /dev/null; then
-    echo "ERROR: se necesita 'sudo' para instalar el servicio"
+if ! command -v pacman &> /dev/null; then
+    echo "Error: Este script es para Arch/Manjaro."
     exit 1
 fi
 
-# Check dependencies
-for cmd in python3 rsync systemctl; do
-    if ! command -v $cmd &> /dev/null; then
-        echo "ERROR: '$cmd' no encontrado"
-        exit 1
-    fi
-done
+echo ""
+echo "[1/2] Instalando dependencias del sistema..."
+sudo pacman -S --needed --noconfirm python python-pip portaudio ffmpeg pipewire-pulse
 
-# Copy project
-echo "1. Copiando archivos a $INSTALL_DIR..."
-mkdir -p "$INSTALL_DIR"
-rsync -a --exclude='venv' --exclude='__pycache__' --exclude='temp_audio' \
-    --exclude='temp_media' --exclude='debug.log' --exclude='.git' --exclude='*.log' \
-    "$SCRIPT_DIR/" "$INSTALL_DIR/"
+echo ""
+echo "[2/2] Instalando Python y servicio..."
+python -m venv "$PROJECT_DIR/.venv"
+"$PROJECT_DIR/.venv/bin/pip" install -r "$PROJECT_DIR/requirements.txt"
 
-# Create venv
-echo "2. Creando entorno virtual..."
-cd "$INSTALL_DIR"
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt -q
+SERVICE_DIR="$HOME/.config/systemd/user"
+mkdir -p "$SERVICE_DIR"
+sed -e "s|__VENV_PYTHON__|$VENV_PYTHON|" \
+    -e "s|__MAIN_PY__|$PROJECT_DIR/main.py|" \
+    -e "s|__PROJECT_DIR__|$PROJECT_DIR|" \
+    "$PROJECT_DIR/nova.service" > "$SERVICE_DIR/nova.service"
 
-# Install systemd service
-echo "3. Instalando servicio systemd..."
-SERVICE_FILE="/etc/systemd/system/ai-voice-assistant.service"
-
-# Replace templates
-sed -e "s|%%USER%%|$CURRENT_USER|g" \
-    -e "s|%%HOME%%|$HOME|g" \
-    -e "s|%%UID%%|$CURRENT_UID|g" \
-    -e "s|%%DESKTOP%%|$XDG_DESKTOP|g" \
-    -e "s|%%WAYLAND%%|$WAYLAND_DISPLAY|g" \
-    "$INSTALL_DIR/ai-voice-assistant.service" | sudo tee "$SERVICE_FILE" > /dev/null
-
-sudo systemctl daemon-reload
-sudo systemctl enable ai-voice-assistant
-sudo systemctl start ai-voice-assistant
+systemctl --user daemon-reload
+systemctl --user enable nova.service
 
 echo ""
 echo "=== Instalacion completada ==="
 echo ""
-echo "Comandos utiles:"
-echo "  sudo systemctl start ai-voice-assistant    # Iniciar"
-echo "  sudo systemctl stop ai-voice-assistant     # Parar"
-echo "  sudo systemctl restart ai-voice-assistant  # Reiniciar"
-echo "  sudo systemctl status ai-voice-assistant   # Estado"
-echo "  sudo journalctl -u ai-voice-assistant -f   # Logs"
+echo "Comandos:"
+echo "  systemctl --user start nova      # Iniciar"
+echo "  systemctl --user stop nova       # Detener"
+echo "  systemctl --user restart nova    # Reiniciar"
+echo "  journalctl --user -u nova -f     # Ver logs"
 echo ""
-echo "IMPORTANTE: Configura un atajo de teclado en tu entorno"
-echo "  apuntando a: $INSTALL_DIR/trigger.sh"
+echo "Atajo: Ctrl+Alt+Space"

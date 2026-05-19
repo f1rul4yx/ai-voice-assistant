@@ -1,0 +1,16 @@
+[Unit]
+Description=Nova Voice Assistant
+After=graphical-session.target
+Wants=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=__VENV_PYTHON__ __MAIN_PY__
+WorkingDirectory=__PROJECT_DIR__
+Environment=DISPLAY=:0
+Environment=XDG_RUNTIME_DIR=/run/user/%U
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=graphical-session.target

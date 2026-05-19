@@ -1,3 +1,7 @@
-PyQt6>=6.6.0
-openai-whisper>=20231117
-edge-tts>=6.1.0
+numpy
+scipy
+sounddevice
+faster-whisper
+pynput
+PyQt6
+edge-tts
